@@ -1,151 +1,92 @@
-export function createFieldConfig(simplifiedFields: any) {
-    const defaultConfig = {
-        type: 'text',  // default type for simplicity
-        required: false,
-        readOnly: false,
-        options: []  // mainly for selects or radio buttons
-    };
+import React from 'react';
+import { frappeObject } from './object';
 
-    const fieldConfigurations = {};
+interface Field {
+    name: string;
+    label?: string;
+    required: boolean;
+    readOnly: boolean;
+    options?: string;
+    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea';
+}
 
-    simplifiedFields.forEach((field: any) => {
-        const options = field.options ? field.options.split('\n').map((opt: string) => opt.trim()) : [];
-        
-        const fieldConfig = {
-            ...defaultConfig,
-            ...field,
-            options: options
-        };
-        // @ts-ignore
-        fieldConfigurations[field.name] = fieldConfig;
+interface Document {
+    doctype: string;
+    name: string;
+    fields: Field[];
+}
+
+interface FrappeObject {
+    docs: Document[];
+}
+
+interface CustomComponents {
+    [key: string]: React.ComponentType<{ config: Field }>;
+}
+
+const DefaultComponents: CustomComponents = {
+    Text: ({ config }) => (
+        <input type="text" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    ),
+    Number: ({ config }) => (
+        <input type="number" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    ),
+    Email: ({ config }) => (
+        <input type="email" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    ),
+    Date: ({ config }) => (
+        <input type="date" name={config.name} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    ),
+    Select: ({ config }) => (
+        <select name={config.name} required={config.required} className="select select-bordered w-full max-w-xs">
+            {config.options?.split('\n').map((option, index) => <option key={index} value={option.trim()}>{option.trim()}</option>)}
+        </select>
+    ),
+    Checkbox: ({ config }) => (
+        <label className="label cursor-pointer">
+            <input type="checkbox" name={config.name} checked={config.required} readOnly={config.readOnly} className="checkbox checkbox-primary" />
+            {config.label}
+        </label>
+    ),
+    TextArea: ({ config }) => (
+        <textarea name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="textarea textarea-bordered h-24 w-full" />
+    )
+};
+
+export function createFieldConfig(formFields: FrappeObject): { [key: string]: Field } {
+    const fieldConfigurations: { [key: string]: Field } = {};
+
+    formFields.docs.forEach(doc => {
+        doc.fields.forEach(field => {
+            fieldConfigurations[field.name] = {
+                ...field,
+                required: field.required,
+                readOnly: field.readOnly,
+                options: field.options
+            };
+        });
     });
 
     return fieldConfigurations;
 }
 
-
-// use: renderForm(config, reactRenderer);
-// @ts-ignore
-export function renderForm(fieldsConfig, renderFunction) {
-    return Object.keys(fieldsConfig).map(fieldName => {
-        return renderFunction({ config: fieldsConfig[fieldName] });
-    });
-}
-
-
-// Simplified fields (assuming this data comes from `simplifyJSON` output)
-export const simplifiedFields = [
-    {
-        name: "status",
-        label: "Status",
-        fieldtype: "Select",
-        options: "Synced, In Process, Failed",
-        default: "Synced",
-        required: true,
-        readOnly: false,
-        placeholder: "Select status"
-    },
-    {
-        name: "meta_title",
-        label: "Meta Title",
-        fieldtype: "Data",
-        default: "Page Title",
-        required: true,
-        readOnly: false,
-        placeholder: "Enter meta title",
-    }
-];
-
-
-export const fieldConfigurations = createFieldConfig(simplifiedFields);
-
-
-import React from 'react';
-
-interface FieldConfig {
-    name: string;
-    required: boolean;
-    options?: string[];
-    placeholder?: string;
-    type?: string; // Optional to handle default inputs
-    fieldtype: 'Select' | 'Checkbox' | 'Radio' | 'Date' | 'Text';
-}
-
-interface CustomComponents {
-    [key: string]: React.ComponentType<{ config: FieldConfig }>;
-}
-
-const DefaultComponents: CustomComponents = {
-    Select: ({ config }: { config: FieldConfig }) => (
-        <select name={config.name} required={config.required}>
-            {config.options?.map((option, index) => <option key={index} value={option}>{option}</option>)}
-        </select>
-    ),
-    Checkbox: ({ config }: { config: FieldConfig }) => (
-        <div>
-            {config.options?.map((option, index) => (
-                <label key={index}>
-                    <input type="checkbox" name={config.name} value={option} required={config.required} /> {option}
-                </label>
-            ))}
-        </div>
-    ),
-    Radio: ({ config }: { config: FieldConfig }) => (
-        <div>
-            {config.options?.map((option, index) => (
-                <label key={index}>
-                    <input type="radio" name={config.name} value={option} required={config.required} /> {option}
-                </label>
-            ))}
-        </div>
-    ),
-    Date: ({ config }: { config: FieldConfig }) => (
-        <input type="date" name={config.name} required={config.required} />
-    ),
-    Text: ({ config }: { config: FieldConfig }) => (
-        <input type="text" name={config.name} placeholder={config.placeholder} required={config.required} />
-    )
-};
-
-
-interface CustomFieldProps {
-    config: FieldConfig;
-}
-
-const DataInput: React.FC<CustomFieldProps> = ({ config }) => (
-    <input
-        type="text"
-        className="input input-bordered w-full max-w-xs"
-    />
-);
-
-const AttachInput: React.FC<CustomFieldProps> = ({ config }) => (
-    <input
-        type="file"
-        name={config.name}
-        className="input input-bordered w-full max-w-xs"
-    />
-);
-
-const LongTextInput: React.FC<CustomFieldProps> = ({ config }) => (
-    <textarea
-        name={config.name}
-        className="textarea textarea-bordered h-24"
-    />
-);
-
-export const TailwindComponents = {
-    Data: DataInput,
-    Attach: AttachInput,
-    "Long Text": LongTextInput
-};
-
-
-const ReactFieldRenderer: React.FC<{ config: FieldConfig; customComponents?: CustomComponents }> = ({ config, customComponents = {} }) => {
-    console.log({config});
+const ReactFieldRenderer = ({ config, customComponents = {} }: { config: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
     const Component = customComponents[config.fieldtype] || DefaultComponents[config.fieldtype] || DefaultComponents.Text;
-
     return <Component config={config} />;
 };
 
-export default ReactFieldRenderer;
+// @ts-ignore
+const fieldConfigurations = createFieldConfig(frappeObject);
+
+const FormComponent: React.FC = () => {
+    return (
+        <form action={""} onSubmit={e => e.preventDefault()}>
+            {Object.values(fieldConfigurations).map((field, index) => (
+                <ReactFieldRenderer key={index} config={field} />
+            ))}
+            <button className="btn">Submit</button>
+        </form>
+    );
+};
+
+export default FormComponent;

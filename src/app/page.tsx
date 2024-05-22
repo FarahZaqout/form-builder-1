@@ -1,4 +1,4 @@
-import IntegratedForm from '../components/Integrated';
+import IntegratedForm from '../components/Integrated.client';
 
 export default function Home() {
 

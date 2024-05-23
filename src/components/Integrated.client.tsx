@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { frappeObject } from './object';
+import { useForm, Controller } from 'react-hook-form';
 
 interface Field {
     doctype: string;
@@ -90,7 +91,7 @@ interface EnhancedFieldConfig extends Field {
 const DefaultComponents: CustomComponents = {
     Text: ({ config }) => {
         return (
-            <input type="text" name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} onChange={config.onChange}  className="input input-bordered w-full max-w-xs" />
+            <input onChange={config.onChange} type="text" name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
         )
     },
     Number: ({ config }) => (
@@ -152,21 +153,37 @@ export function createFieldConfig(formFields: FrappeObject): { [key: string]: En
     return fieldConfigurations;
 }
 
-const ReactFieldRenderer = ({ config, customComponents = {} }: { config: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
+const ReactFieldRenderer = ({ control, config, customComponents = {} }: { control: any; config: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
     const Component = customComponents[config.fieldtype] || DefaultComponents[config.fieldtype] || DefaultComponents.Text;
-    return <Component config={config} />;
+
+    return (
+        <Controller
+            name={config.name}
+            control={control}
+            defaultValue={config.default || ''}
+            render={({ field }) => <Component {...field} config={config} />}
+        />
+    );
 };
 
 // @ts-ignore
 const fieldConfigurations = createFieldConfig(frappeObject);
 
+
 const FormComponent: React.FC = () => {
+    const { control, handleSubmit, formState: { errors } } = useForm();
+    console.log({control})
+    // @ts-ignore
+    const onSubmit = data => {
+        console.log(data);
+    };
+
     return (
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
             {Object.values(fieldConfigurations).map((field, index) => (
-                <ReactFieldRenderer key={index} config={field} />
+                <ReactFieldRenderer key={index} control={control} config={field} />
             ))}
-            <button className="btn">Submit</button>
+            <button type="submit" className="btn">Submit</button>
         </form>
     );
 };

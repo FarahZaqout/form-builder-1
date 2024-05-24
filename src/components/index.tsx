@@ -21,35 +21,35 @@ interface FrappeObject {
 }
 
 interface CustomComponents {
-    [key: string]: React.ComponentType<{ config: Field }>;
+    [key: string]: React.ComponentType<{ props: Field }>;
 }
 
 const DefaultComponents: CustomComponents = {
-    Text: ({ config }) => (
-        <input type="text" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    Text: ({ props }) => (
+        <input type="text" name={props.name} placeholder={props.label} required={props.required} readOnly={props.readOnly} className="input input-bordered w-full max-w-xs" />
     ),
-    Number: ({ config }) => (
-        <input type="number" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    Number: ({ props }) => (
+        <input type="number" name={props.name} placeholder={props.label} required={props.required} readOnly={props.readOnly} className="input input-bordered w-full max-w-xs" />
     ),
-    Email: ({ config }) => (
-        <input type="email" name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    Email: ({ props }) => (
+        <input type="email" name={props.name} placeholder={props.label} required={props.required} readOnly={props.readOnly} className="input input-bordered w-full max-w-xs" />
     ),
-    Date: ({ config }) => (
-        <input type="date" name={config.name} required={config.required} readOnly={config.readOnly} className="input input-bordered w-full max-w-xs" />
+    Date: ({ props }) => (
+        <input type="date" name={props.name} required={props.required} readOnly={props.readOnly} className="input input-bordered w-full max-w-xs" />
     ),
-    Select: ({ config }) => (
-        <select name={config.name} required={config.required} className="select select-bordered w-full max-w-xs">
-            {config.options?.split('\n').map((option, index) => <option key={index} value={option.trim()}>{option.trim()}</option>)}
+    Select: ({ props }) => (
+        <select name={props.name} required={props.required} className="select select-bordered w-full max-w-xs">
+            {props.options?.split('\n').map((option, index) => <option key={index} value={option.trim()}>{option.trim()}</option>)}
         </select>
     ),
-    Checkbox: ({ config }) => (
+    Checkbox: ({ props }) => (
         <label className="label cursor-pointer">
-            <input type="checkbox" name={config.name} checked={config.required} readOnly={config.readOnly} className="checkbox checkbox-primary" />
-            {config.label}
+            <input type="checkbox" name={props.name} checked={props.required} readOnly={props.readOnly} className="checkbox checkbox-primary" />
+            {props.label}
         </label>
     ),
-    TextArea: ({ config }) => (
-        <textarea name={config.name} placeholder={config.label} required={config.required} readOnly={config.readOnly} className="textarea textarea-bordered h-24 w-full" />
+    TextArea: ({ props }) => (
+        <textarea name={props.name} placeholder={props.label} required={props.required} readOnly={props.readOnly} className="textarea textarea-bordered h-24 w-full" />
     )
 };
 
@@ -70,19 +70,19 @@ export function createFieldConfig(formFields: FrappeObject): { [key: string]: Fi
     return fieldConfigurations;
 }
 
-const ReactFieldRenderer = ({ config, customComponents = {} }: { config: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
-    const Component = customComponents[config.fieldtype] || DefaultComponents[config.fieldtype] || DefaultComponents.Text;
-    return <Component config={config} />;
+const ReactFieldRenderer = ({ props, customComponents = {} }: { props: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
+    const Component = customComponents[props.fieldtype] || DefaultComponents[props.fieldtype] || DefaultComponents.Text;
+    return <Component props={props} />;
 };
 
 // @ts-ignore
 const fieldConfigurations = createFieldConfig(frappeObject);
 
-const FormComponent: React.FC = () => {
+const FormComponent = ({customComponents}: {customComponents: CustomComponents}) => {
     return (
         <form action={""} onSubmit={e => e.preventDefault()}>
             {Object.values(fieldConfigurations).map((field, index) => (
-                <ReactFieldRenderer key={index} config={field} />
+                <ReactFieldRenderer key={index} props={field} customComponents={customComponents} />
             ))}
             <button className="btn">Submit</button>
         </form>

@@ -17,7 +17,7 @@ interface Field {
     idx: number;
     fieldname: string;
     label: string;
-    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea' | 'Section Break';
+    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea' | 'Section Break'; //placeholder for phase 1
     options?: string;
     search_index: number;
     show_dashboard: number;
@@ -169,12 +169,16 @@ const ReactFieldRenderer = ({ control, config, customComponents = {} }: { contro
 // @ts-ignore
 const fieldConfigurations = createFieldConfig(frappeObject);
 
+interface FormData {
+    [key: string]: any;
+}
+
 
 const FormComponent: React.FC = () => {
     const { control, handleSubmit, formState: { errors } } = useForm();
     console.log({control})
-    // @ts-ignore
-    const onSubmit = data => {
+
+    const onSubmit = (data: FormData) => {
         console.log(data);
     };
 

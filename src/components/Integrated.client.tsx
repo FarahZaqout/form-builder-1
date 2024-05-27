@@ -1,9 +1,17 @@
 'use client';
-import React from 'react';
-import { frappeObject } from './object';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { frappeObject } from './object';
+import { frappe2 } from './frappe2';
+import axios from 'axios';
+import { FrappeApp } from 'frappe-js-sdk';
+
+
+const frappe = new FrappeApp("http://161.35.236.145/app/doctype/TestDoc?token=2bb03d902b9aedc");
+const db = frappe.db();
 
 interface Field {
+    // Field properties
     doctype: string;
     name: string;
     creation: string;
@@ -17,7 +25,7 @@ interface Field {
     idx: number;
     fieldname: string;
     label: string;
-    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea' | 'Section Break'; //placeholder for phase 1
+    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea' | 'Section Break';
     options?: string;
     search_index: number;
     show_dashboard: number;
@@ -46,7 +54,7 @@ interface Field {
     allow_bulk_edit: number;
     in_standard_filter: number;
     in_preview: number;
-    read_only: number;
+    read_only: boolean;
     length: number;
     translatable: number;
     hide_border: number;
@@ -55,17 +63,8 @@ interface Field {
     non_negative: number;
     is_virtual: number;
     sort_options: number;
-    fields: Field[];
-    permissions: any[];  // Type as needed
-    actions: any[];  // Type as needed
-    links: any[];  // Type as needed
-    states: any[];  // Type as needed
-    search_fields?: string;  // Nullable if not always present
-    is_custom_field?: boolean;  // Nullable if not always present
-    linked_document_type?: string;  // Nullable if not always present
-    default?: string;  // Optional for fields like 'Select'
+    default: string;
 }
-
 
 interface Document {
     doctype: string;
@@ -78,114 +77,65 @@ interface FrappeObject {
 }
 
 interface CustomComponents {
-    [key: string]: React.ComponentType<{ config: EnhancedFieldConfig }>;
-}
-
-interface EnhancedFieldConfig extends Field {
-    onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
-    onFocus?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
-    onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
-    // Additional handlers or attributes can be added here
+    [key: string]: React.ComponentType<{ field: any, config: Field }>;
 }
 
 const DefaultComponents: CustomComponents = {
-    Text: ({ config }) => {
-        return (
-            <input onChange={config.onChange} type="text" name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
-        )
-    },
-    Number: ({ config }) => (
-        <input onChange={config.onChange} type="number" name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
+    Text: ({ field, config }) => (
+        <input type="text" {...field} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
     ),
-    Email: ({ config }) => (
-        <input onChange={config.onChange} type="email" name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
-    ),
-    Date: ({ config }) => (
-        <input onChange={config.onChange} type="date" name={config.name} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
-    ),
-    Select: ({ config }) => (
-        <select onChange={config.onChange} name={config.name} required={Boolean(config.reqd)} className="select select-bordered w-full max-w-xs">
-            {config.options?.split('\n').map((option, index) => <option key={index} value={option.trim()}>{option.trim()}</option>)}
-        </select>
-    ),
-    Checkbox: ({ config }) => (
-        <label className="label cursor-pointer">
-            <input onChange={config.onChange} type="checkbox" name={config.name} checked={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="checkbox checkbox-primary" />
-            {config.label}
-        </label>
-    ),
-    TextArea: ({ config }) => (
-        <textarea onChange={config.onChange} name={config.name} placeholder={config.label} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="textarea textarea-bordered h-24 w-full" />
-    )
+    // Include other components similarly
 };
 
-function enhanceFieldConfig(field: Field): EnhancedFieldConfig {
-    return {
-        ...field,
-        onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => console.log(`${field.name} changed`, e.target.value),
-        onFocus: () => console.log(`${field.name} focused`),
-        onBlur: () => console.log(`${field.name} blurred`),
-        // Special handling for select fields could go here
-        ...(field.fieldtype === 'Select' && {
-            onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
-                console.log(`${field.name} selected value`, e.target.value);
-                // Additional logic for select fields
-            }
-        })
-    };
-}
-
-export function createFieldConfig(formFields: FrappeObject): { [key: string]: EnhancedFieldConfig } {
-    const fieldConfigurations: { [key: string]: Field } = {};
-
+// reapply recursion.
+const createFieldConfig = (formFields: FrappeObject): Field[] => {
+    const configurations: Field[] = [];
     formFields.docs.forEach(doc => {
         doc.fields.forEach(field => {
-            fieldConfigurations[field.name] = {
-                ...field,
-                reqd: field.reqd,
-                read_only: field.read_only,
-                options: field.options
-            };
-            fieldConfigurations[field.name] = enhanceFieldConfig(fieldConfigurations[field.name]);
+            configurations.push(field);
         });
     });
-    
-    return fieldConfigurations;
-}
-
-const ReactFieldRenderer = ({ control, config, customComponents = {} }: { control: any; config: Field; customComponents?: CustomComponents }): React.ReactElement | null => {
-    const Component = customComponents[config.fieldtype] || DefaultComponents[config.fieldtype] || DefaultComponents.Text;
-
-    return (
-        <Controller
-            name={config.name}
-            control={control}
-            defaultValue={config.default || ''}
-            render={({ field }) => <Component {...field} config={config} />}
-        />
-    );
+    return configurations;
 };
 
-// @ts-ignore
-const fieldConfigurations = createFieldConfig(frappeObject);
-
-interface FormData {
-    [key: string]: any;
+function getComponent(fieldType: string): React.ComponentType<{ field: any, config: Field }> {
+    // Default to Text if no matching component found
+    return DefaultComponents[fieldType] || DefaultComponents.Text;
 }
+//@ts-ignore
+const fieldConfigurations = createFieldConfig(frappe2); // Assuming frappeObject is defined
 
-
+// add a utility that 1- handles column and section breaks, 2- handles custom components.
 const FormComponent: React.FC = () => {
     const { control, handleSubmit, formState: { errors } } = useForm();
-    console.log({control})
-
-    const onSubmit = (data: FormData) => {
+    const onSubmit = async (data: any) => {
         console.log(data);
     };
 
+    useEffect(() => {
+        db.getDoc('DocType', 'TestDoc')
+            .then((doc) => console.log(doc))
+            .catch((error) => console.error(error));
+
+        db.getDocList('DocType')
+            .then((docs) => console.log(docs))
+            .catch((error) => console.error(error));
+    }, [])
+
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            {Object.values(fieldConfigurations).map((field, index) => (
-                <ReactFieldRenderer key={index} control={control} config={field} />
+            {fieldConfigurations.map((field, index) => (
+                <Controller
+                    key={index}
+                    name={field.fieldname}
+                    control={control}
+                    // rules={[]} add validation rules here
+                    defaultValue={field.default || ''}
+                    render={({ field: controllerField }) => {
+                        const Component = getComponent(field.fieldtype);
+                        return <Component field={controllerField} config={field} />;
+                    }}
+                />
             ))}
             <button type="submit" className="btn">Submit</button>
         </form>
@@ -193,3 +143,5 @@ const FormComponent: React.FC = () => {
 };
 
 export default FormComponent;
+
+

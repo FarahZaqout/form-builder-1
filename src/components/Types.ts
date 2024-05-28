@@ -67,3 +67,10 @@ export interface FrappeObject {
 export interface CustomComponents {
     [key: string]: React.ComponentType<{ field: any, config: Field }>;
 }
+
+// todo: optimize 
+export interface ExtendedField extends Field {
+    childFields?: ExtendedField[];
+    columnFields?: ExtendedField[][];
+}
+

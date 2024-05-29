@@ -20,14 +20,20 @@ export const DefaultComponents: CustomComponents = {
     ),
     Checkbox: ({ field, config }) => (
         <label className="label cursor-pointer">
-            <input type="checkbox" {...field} className="checkbox checkbox-primary" />
+            <input type="checkbox" {...field} className="checkbox checkbox-primary" disabled={Boolean(config.read_only)} />
             <span className="label-text ml-2">{config.label}</span>
         </label>
     ),
     FileUpload: ({ field, config }) => (
-        <input type="file" {...field} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
+        <input type="file" {...field} required={Boolean(config.reqd)} disabled={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
     ),
     Date: ({ field, config }) => (
         <input type="date" {...field} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
+    ),
+    'Text Editor': ({ field, config }) => (
+        <label>
+            <span className="label-text">{config.label}</span>
+            <textarea {...field} required={Boolean(config.reqd)} readOnly={Boolean(config.read_only)} className="input input-bordered w-full max-w-xs" />
+        </label>
     )
 };

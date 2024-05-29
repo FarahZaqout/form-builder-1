@@ -70,7 +70,5 @@ export interface CustomComponents {
 
 // todo: optimize 
 export interface ExtendedField extends Field {
-    childFields?: ExtendedField[];
-    columnFields?: ExtendedField[][];
+    fields?: ExtendedField[];
 }
-

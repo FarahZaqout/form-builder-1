@@ -1,6 +1,10 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // allow generating dynamic column number based on the field values available.
+  safelist: [
+    ...Array.from({ length: 12 }, (_, i) => `grid-cols-${i + 1}`)
+  ],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",

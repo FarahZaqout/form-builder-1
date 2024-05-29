@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, ControllerRenderProps } from 'react-hook-form';
 import { ExtendedField, CustomComponents } from './Types';
-import { FIELD_TYPES, MESSAGES } from './constants';
+import { FIELD_TYPES } from './constants';
 import { generateValidationRules } from './validationRules';
 
 interface RenderFieldProps {
@@ -19,7 +19,7 @@ export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors
     }
     
     const Component = componentMap[field.fieldtype] || componentMap.Text; // @todo: for debug purposes only. Will remove before release.
-
+    // console.log({component: field.fieldtype})
     return (
         <Controller
             key={index}

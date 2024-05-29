@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const { Console } = require('console');
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -48,8 +49,93 @@ const data = {
   };
   
 // const data = {"description": "New ToDo"}
+// const testDocData = {
+//     "attach": "",
+//     "attach_image": "",
+//     "autocomplete": "",
+//     "barcode": "",
+//     "bio": "asfa",
+//     "button": "",
+//     "check": "0",
+//     "code": "",
+//     "color": "",
+//     "currency": "",
+//     "d1": "",
+//     "d2": "",
+//     "data": "",
+//     "date": "",
+//     "datetime": "",
+//     "dl_doc": "Opportunity",
+//     "duration": "0",
+//     "dynamic_link": "",
+//     "float": "",
+//     "full_name": "farah ke",
+//     "geolocation": "",
+//     "heading": "",
+//     "html": "",
+//     "html_editor": "",
+//     "icon": "",
+//     "image": "",
+//     "image_link": "",
+//     "int": "",
+//     "json": "",
+//     "link": "",
+//     "long_text": "",
+//     "markdown_editor": "",
+//     "password": "",
+//     "percent": "",
+//     "phone": "",
+//     "rating": "",
+//     "read_only": "Mad",
+//     "select": "",
+//     "signature": "",
+//     "small_text": "",
+//     "table": "",
+//     "table_multiselect": "",
+//     "text": "",
+//     "text_editor": "",
+//     "time": "",
+//     "warehouse": ""
+//   }
 
-// const data = {"docstatus":0,"doctype":"ToDo","name":"new-todo-ulqkjqpaik","__islocal":1,"__unsaved":1,"owner":"Administrator","status":"Open","priority":"Medium","date":"2024-05-28","__run_link_triggers":1,"description":"<div class=\"ql-editor read-mode\"><p>kurwa the big meow</p></div>"}
+const kurwaData = {
+    "amended_from": "",
+    "attach_image_kphq": "ads",
+    "attach_utln": "asfsadf",
+    "autocomplete_otbl": "sadf",
+    "check_xbsx": "0sdf",
+    "code_aibs": "fdsa",
+    "color_bpvx": "asdf",
+    "currency_dlmh": "asdf",
+    "currency_mgch": "as",
+    "data_sfoc": "as",
+    "date_xqhc": "2024-05-08",
+    "datetime_hedx": "fa",
+    "duration_ktzq": "as",
+    "float_xarh": "ff",
+    "html_editor_ujvy": "sd",
+    "int_fhpe": "sa",
+    "long_text_pgry": "asdf",
+    "password_jeng": "as",
+    "percent_bwlr": "sss",
+    "phone_ordl": "sf"
+  }
+  
+  
+  function sanitizeData(data) {
+    // Iterate over each key in the object
+    for (const key in data) {
+        // Check if the property is an empty string
+        if (data[key] === '' && key !== "dynamic_link") {
+            data[key] = null;  // Replace empty string with null
+        }
+    }
+    return data;
+}
+
+// const sanitized = sanitizeData(testDocData);
+
+const data1 = {"dl_doc":"Opportunity","dynamic_link":""}
 
 const formData = new URLSearchParams();
 // Object.keys(data).forEach(key => {
@@ -60,27 +146,15 @@ formData.append("doc", JSON.stringify(data)); // Make sure the 'doc' key is used
 console.log(formData.toString().includes("description"));
 
 async function sendDataToFrappe() {
-    // const url = `${BASE_URL}/app/resource/ToDo`; 
-    // const data = {
-    //     description: "this is request",
-    // };
 
-    // try {
-    //     console.log("sending request");
-
-    //     const response = await axios.post(url, data, {
-    //         headers: {
-    //             'Authorization': `token ${API_KEY}:${API_SECRET}`,
-    //             // 'Content-Type': 'application/json',
-    //             'Accept': 'application/json',
-    //         }
-    //     });
-    //     console.log('Data sent successfully:', response);
-    // } catch (error) {
-    //     console.error('Error sending data to Frappe:', error.response ? error.response.data : error);
-    // }
-
-    fetch("http://161.35.236.145/api/resource/ToDo", {
+        // try {
+        //     const dat = JSON.parse(JSON.stringify(testDocData));
+        //     console.log({dat});
+        // } catch (e) {
+        //     console.error("Invalid JSON data", e);
+        // }
+        // return;
+    fetch("http://161.35.236.145/api/resource/kurwa", {
         headers: {
             "accept": "application/json",
             "accept-language": "en-US,en;q=0.9,ar;q=0.8",
@@ -92,7 +166,8 @@ async function sendDataToFrappe() {
             "Referrer-Policy": "strict-origin-when-cross-origin"
         },
         method: "POST",
-        body: JSON.stringify(data),
+        // body: JSON.stringify(data),
+        body: JSON.stringify(kurwaData),
         // body: formData.toString()
         })
         .then(response => response.json())

@@ -1,6 +1,7 @@
 import { FrappeObject, ExtendedField, Field } from '../Types';
 import { DefaultComponents } from './ComponentMap';
 import { FIELD_TYPES } from './constants';
+import yup from 'yup';
 
 export function getComponent(fieldType: string): React.ComponentType<{ field: any, config: Field }> {
     return DefaultComponents[fieldType] || DefaultComponents[FIELD_TYPES.DEFAULT_FALLBACK_COMPONENT];
@@ -43,4 +44,29 @@ export function countColumnBreaks(fields: ExtendedField[]): number {
 
 export function hasFileUploadField(fields: ExtendedField[]): boolean {
     return fields.some(field => field.fieldtype === FIELD_TYPES.FILE_UPLOAD);
+}
+
+
+// Utility function to build Yup validation schema based on the field configuration
+function buildYupValidationSchema(fieldConfigurations) {
+    let schemaFields = {};
+
+    fieldConfigurations.forEach(section => {
+        if (section.fields) {
+            section.fields.forEach(field => {
+                if (field.reqd) {
+                    let validator = yup.string().required('This field is required');
+                    if (field.fieldtype === 'Email') {
+                        validator = validator.email('Enter a valid email');
+                    } else if (field.fieldtype === 'Number') {
+                        validator = yup.number().required('This field is required').typeError('Enter a valid number');
+                    }
+
+                    schemaFields[field.fieldname] = validator;
+                }
+            });
+        }
+    });
+
+    return yup.object().shape(schemaFields);
 }

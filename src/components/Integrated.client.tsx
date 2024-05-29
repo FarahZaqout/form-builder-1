@@ -1,10 +1,10 @@
 'use client';
-import { frappe2 } from './frappe2';
 import React, { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { createFieldConfig, hasFileUploadField, countColumnBreaks } from './FormHelpers';
 import { RenderField } from './RenderField';
-import { CustomComponents, FrappeObject } from './Types';
+import { CustomComponents } from './Types';
+import { FORM_ENCTYPE } from './constants';
 
 // todo: component map should be passed here, and the RenderField should be hidden from the end user. 
 interface FormComponentProps {
@@ -25,7 +25,7 @@ const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObjec
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" 
-              encType={containsFileUpload ? "multipart/form-data" : "application/x-www-form-urlencoded"}>
+              encType={containsFileUpload ? FORM_ENCTYPE.MULTIPART : FORM_ENCTYPE.URLENCODED}>
             {fieldConfigurations.map((section, index) => (
                 <div key={index} className={`grid gap-4 w-full ${section.fields ? `grid-cols-${countColumnBreaks(section.fields) + 1}` : 'grid-cols-1'}`}>
                     {section.fields && section.fields.map((field, fieldIndex) => (

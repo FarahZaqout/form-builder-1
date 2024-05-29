@@ -1,8 +1,9 @@
 import { FrappeObject, ExtendedField, Field } from '../Types';
 import { DefaultComponents } from './ComponentMap';
+import { FIELD_TYPES } from './constants';
 
 export function getComponent(fieldType: string): React.ComponentType<{ field: any, config: Field }> {
-    return DefaultComponents[fieldType] || DefaultComponents.Text;
+    return DefaultComponents[fieldType] || DefaultComponents[FIELD_TYPES.DEFAULT_FALLBACK_COMPONENT];
 }
 
 export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
@@ -13,7 +14,7 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
         doc.fields.forEach((field: any) => {
             const extendedField: ExtendedField = { ...field };
 
-            if (field.fieldtype === 'Section Break') {
+            if (field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
                 if (currentSection) {
                     configurations.push(currentSection);
                 }
@@ -37,9 +38,9 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
 
 export function countColumnBreaks(fields: ExtendedField[]): number {
     // This function assumes fields array does not include the 'Section Break' itself
-    return fields.reduce((count, field) => count + (field.fieldtype === 'Column Break' ? 1 : 0), 0);
+    return fields.reduce((count, field) => count + (field.fieldtype === FIELD_TYPES.COLUMN_BREAK ? 1 : 0), 0);
 }
 
 export function hasFileUploadField(fields: ExtendedField[]): boolean {
-    return fields.some(field => field.fieldtype === 'FileUpload');
+    return fields.some(field => field.fieldtype === FIELD_TYPES.FILE_UPLOAD);
 }

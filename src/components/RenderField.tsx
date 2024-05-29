@@ -1,6 +1,7 @@
 import React from 'react';
 import { Controller, ControllerRenderProps } from 'react-hook-form';
 import { ExtendedField, CustomComponents } from './Types';
+import { FIELD_TYPES, MESSAGES } from './constants';
 
 interface RenderFieldProps {
     field: ExtendedField;
@@ -12,7 +13,7 @@ interface RenderFieldProps {
 
 export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors, index, componentMap }) => {
     // Skip rendering for non-interactive field types such as 'Column Break' and 'Section Break'
-    if (field.fieldtype === 'Column Break' || field.fieldtype === 'Section Break') {
+    if (field.fieldtype === FIELD_TYPES.COLUMN_BREAK || field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
         return null;
     }
     
@@ -23,7 +24,7 @@ export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors
             key={index}
             name={field.fieldname}
             control={control}
-            rules={{ required: field.reqd ? 'This field is required' : false }}
+            rules={{ required: field.reqd ? MESSAGES.FIELD_REQUIRED : false }}
             defaultValue={field.default || ''}
             render={({ field: controllerField }: { field: ControllerRenderProps }) => (
                 <div>

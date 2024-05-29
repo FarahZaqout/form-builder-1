@@ -16,7 +16,7 @@ export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors
         return null;
     }
     
-    const Component = componentMap[field.fieldtype] || (() => <div>Unsupported field type</div>); // @todo: for debug purposes only. Will remove before release.
+    const Component = componentMap[field.fieldtype] || componentMap.Text; // @todo: for debug purposes only. Will remove before release.
 
     return (
         <Controller

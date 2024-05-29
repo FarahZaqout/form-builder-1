@@ -2,6 +2,7 @@ import React from 'react';
 import { Controller, ControllerRenderProps } from 'react-hook-form';
 import { ExtendedField, CustomComponents } from './Types';
 import { FIELD_TYPES, MESSAGES } from './constants';
+import { generateValidationRules } from './validationRules';
 
 interface RenderFieldProps {
     field: ExtendedField;
@@ -24,7 +25,7 @@ export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors
             key={index}
             name={field.fieldname}
             control={control}
-            rules={{ required: field.reqd ? MESSAGES.FIELD_REQUIRED : false }}
+            rules={generateValidationRules(field)}
             defaultValue={field.default || ''}
             render={({ field: controllerField }: { field: ControllerRenderProps }) => (
                 <div>

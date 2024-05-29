@@ -15,3 +15,9 @@ export const FORM_ENCTYPE = {
     URLENCODED: "application/x-www-form-urlencoded"
 };
 
+export const VALIDATION_MESSAGES = {
+    FIELD_REQUIRED: "This field is required",
+    EMAIL_INVALID: "Please enter a valid email address",
+    NUMBER_INVALID: "Please enter a valid number",
+    FILE_SIZE_LIMIT: "File size should not exceed 5MB"  // Keeping the file size limit
+};

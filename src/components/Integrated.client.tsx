@@ -50,8 +50,14 @@ interface RenderFieldProps {
     index: number;
 }
 
-
+// Todo: component map should be passed to the form as props and this function can then run on it.
 const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors, index }) => {
+    // Check if the field type is 'Column Break' or 'Section Break'
+    if (field.fieldtype === 'Column Break' || field.fieldtype === 'Section Break') {
+        // Simply return null or some other placeholder if you need to visualize breaks in debugging
+        return null; // Or <div>Section Break</div> or similar if you need a visual placeholder
+    }
+    
     const Component = getComponent(field.fieldtype);
     return (
         <Controller
@@ -70,9 +76,55 @@ const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors, index
     );
 };
 
+interface SectionAnalysis {
+    sectionBreakCount: number;
+    columnsPerSection: number[];
+}
+
+function analyzeFrappeObject(frappeObject: FrappeObject): SectionAnalysis {
+    let sectionBreakCount = 0;
+    let columnsPerSection: number[] = [];
+    let currentColumnCount = 0;
+
+    for (const doc of frappeObject.docs) {
+        for (const field of doc.fields) {
+            if (field.fieldtype.toLowerCase().includes('section')) {
+                if (sectionBreakCount > 0) {  // Avoid pushing for the first section found
+                    columnsPerSection.push(currentColumnCount);
+                }
+                sectionBreakCount++;
+                currentColumnCount = 0; // Reset column count for the new section
+            } else if (field.fieldtype.toLowerCase().includes('column') && sectionBreakCount > 0) {  // Only count if inside a section
+                currentColumnCount++;
+            }
+        }
+    }
+
+    // Push the last section's column count if at least one section was encountered
+    if (sectionBreakCount > 0) {
+        columnsPerSection.push(currentColumnCount);
+    }
+
+    return {
+        sectionBreakCount,
+        columnsPerSection
+    };
+}
+
+// @ts-ignore
+const analysis = analyzeFrappeObject(frappe2);
+
+console.log({analysis})
 // @ts-ignore
 const fieldConfigurations = createFieldConfig(frappe2);
 
+function countColumnBreaks(fields: ExtendedField[]): number {
+    // This function assumes fields array does not include the 'Section Break' itself
+    return fields.reduce((count, field) => count + (field.fieldtype === 'Column Break' ? 1 : 0), 0);
+}
+
+
+// todo: component map should be passed here, and the RenderField should be hidden from the end user. 
 const FormComponent: React.FC = () => {
     const { control, handleSubmit, formState: { errors } } = useForm();
 
@@ -81,14 +133,11 @@ const FormComponent: React.FC = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {fieldConfigurations.map((section, index) => (
-                // Ensuring the grid takes the full width and setting columns dynamically
-                <div key={index} className={`grid gap-4 w-full ${section.fields ? `grid-cols-${section.fields.length}` : 'grid-cols-1'}`}>
+                <div key={index} className={`grid gap-4 w-full ${section.fields ? `grid-cols-${countColumnBreaks(section.fields) + 1}` : 'grid-cols-1'}`}>
                     {section.fields && section.fields.map((field, fieldIndex) => (
-                        <div key={fieldIndex} className="max-w-full">
-                            <RenderField field={field} control={control} errors={errors} index={fieldIndex} />
-                        </div>
+                        <RenderField key={fieldIndex} field={field} control={control} errors={errors} index={fieldIndex} />
                     ))}
                 </div>
             ))}

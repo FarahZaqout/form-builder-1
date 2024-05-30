@@ -209,11 +209,7 @@ app.post('/api/submit-frappe-form/kurwa', async (req, res) => {
         });
         const frappeJson = await frappeResult.json();
         console.log({frappeJson});
-        res.json({
-            status: 'success',
-            message: 'Form data received successfully',
-            formData: req.body
-        });
+        res.json(frappeJson);
     } catch (e) {
         console.log({error: e});
     }

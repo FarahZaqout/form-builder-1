@@ -14,7 +14,7 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
 
     formFields.docs.forEach(doc => {
         doc.fields.forEach((field: any) => {
-            const extendedField: ExtendedField = { ...field };
+            const extendedField: ExtendedField = { ...field, disabled: Boolean(field.read_only), required: Boolean(field.reqd) };
 
             if (field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
                 if (currentSection) {
@@ -47,16 +47,11 @@ export function hasFileUploadField(fields: ExtendedField[]): boolean {
     return fields.some(field => field.fieldtype === FIELD_TYPES.FILE_UPLOAD);
 }
 
-interface SchemaFields {
-    [key: string]: yup.AnySchema;
-}
-
-
 // Utility function to build Yup validation schema based on the field configuration
 
 export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
-    let schemaFields: SchemaFields = {};
-    let validator: yup.AnySchema;
+    let schemaFields: {[key: string]: yup.NumberSchema | yup.StringSchema | yup.DateSchema | yup.MixedSchema} = {};
+    let validator: yup.NumberSchema | yup.StringSchema | yup.DateSchema | yup.MixedSchema;
 
     fieldConfigurations.forEach(section => {
         if (section.fields) {
@@ -67,8 +62,13 @@ export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
                         break;
                     case 'number':
                     case 'currency':
+                    case 'duration':
                     case 'percent':
                         validator = yup.number().typeError('Enter a valid number');
+     
+                        if (field.non_negative) {
+                            validator = validator.min(0, 'Value must be non-negative');
+                        }   
                         break;
                     case 'float':
                         validator = yup.number().typeError('Enter a valid float');
@@ -90,6 +90,9 @@ export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
                             }
                           );
                         break;
+                    case 'date':
+                        validator = yup.date().typeError('Enter a valid date');
+                        break;
                     case 'datetime':
                         validator = yup.date().typeError('Enter a valid date and time');
                         break;
@@ -97,11 +100,12 @@ export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
                         validator = yup.string().min(8, 'Password is too short - should be 8 chars minimum.');
                         break;
                     default:
+                        validator = yup.string().max(field.length, 'Password is too short - should be 8 chars minimum.');
                         break;
                 }
 
                 if (field.reqd) {
-                    validator = validator?.required('This field is required');
+                    validator = validator.required('This field is required');
                 }
 
                 schemaFields[field.fieldname] = validator;

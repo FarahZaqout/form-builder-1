@@ -13,7 +13,7 @@ export interface Field {
     idx: number;
     fieldname: string;
     label: string;
-    fieldtype: 'Text' | 'Number' | 'Email' | 'Date' | 'Select' | 'Checkbox' | 'TextArea' | 'Section Break' | 'FileUpload' | 'Column Break' | 'Text Editor';
+    fieldtype: string;
     options?: string;
     search_index: number;
     show_dashboard: number;

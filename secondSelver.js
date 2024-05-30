@@ -1,14 +1,21 @@
 const express = require('express');
 const axios = require('axios');
-const { Console } = require('console');
 const app = express();
 const port = process.env.PORT || 4000;
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
 app.use(express.json());
 
-const API_KEY = '892c40ff4d98441';
-const API_SECRET = 'c131cf8ec2dfd26';
-const BASE_URL = 'http://161.35.236.145';
+app.use(cors({
+    origin: 'http://localhost:3000',  // Allow your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+    credentials: true // Allow cookies and authorization headers with requests
+}));
+
+// const API_KEY = '892c40ff4d98441';
+// const API_SECRET = 'c131cf8ec2dfd26';
+// const BASE_URL = 'http://161.35.236.145';
 
 
 // fetch("http://161.35.236.145/api/method/frappe.client.save", {
@@ -180,15 +187,77 @@ async function sendDataToFrappe() {
 
 }
 
-app.get('/send', (req, res) => {
-    sendDataToFrappe()
-        .then(console.log)
-        .catch(console.log);
-});
+app.use(bodyParser.json());
 
+app.post('/api/submit-frappe-form/kurwa', async (req, res) => {
+    try {
+        console.log('Received form submission:', req.body);
+        const requestBody = sanitizeData(req.body)
+        const frappeResult = await fetch("http://161.35.236.145/api/resource/kurwa", {
+            headers: {
+                "accept": "application/json",
+                "accept-language": "en-US,en;q=0.9,ar;q=0.8",
+                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "x-frappe-csrf-token": "5514016aa24d890a5be1d986e664eb7376c69ad072c911d3d490cef4",
+                "x-requested-with": "XMLHttpRequest",
+                "cookie": "user_image=; sid=97a699c7b2f63abee7335f748c9e4d70e6c62ace24a95fb1782f0565; system_user=yes; full_name=Administrator; user_id=Administrator",
+                "Referer": "http://161.35.236.145/app/todo",
+                "Referrer-Policy": "strict-origin-when-cross-origin"
+            },
+            method: "POST",
+            body: JSON.stringify(requestBody),
+        });
+        const frappeJson = await frappeResult.json();
+        console.log({frappeJson});
+        res.json({
+            status: 'success',
+            message: 'Form data received successfully',
+            formData: req.body
+        });
+    } catch (e) {
+        console.log({error: e});
+    }
+    });
+
+// app.post('/api/submit-frappe-form/kurwa', (req, res) => {
+//     console.log('Received form submission:', req.body);
+  
+//     // fetch("http://161.35.236.145/api/method/frappe.client.save", {
+//     //     headers: {
+//     //         "accept": "application/json",
+//     //         "accept-language": "en-US,en;q=0.9,ar;q=0.8",
+//     //         "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+//     //         "x-frappe-csrf-token": "5514016aa24d890a5be1d986e664eb7376c69ad072c911d3d490cef4",
+//     //         "x-requested-with": "XMLHttpRequest",
+//     //         "cookie": "user_image=; sid=97a699c7b2f63abee7335f748c9e4d70e6c62ace24a95fb1782f0565; system_user=yes; full_name=Administrator; user_id=Administrator",
+//     //         "Referer": "http://161.35.236.145/app/todo",
+//     //         "Referrer-Policy": "strict-origin-when-cross-origin"
+//     //     },
+//     //     method: "POST",
+//     //     // body: JSON.stringify(data),
+//     //     body: req.body
+//     //     })
+//     //     .then(response => response.json())
+//     //     .then(data => {
+//     //     console.log('Success:', data);
+//     //     })
+//     //     .catch((error) => {
+//     //     console.error('Error:', error);
+//     //     });
+
+//     // Here, you would typically handle the form data, e.g., save it to a database,
+//     // perform some operations, validate inputs, etc.
+    
+//     // This is a simple response to indicate success.
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'Form data received successfully',
+//       formData: req.body
+//     });
+//   });
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
 
-sendDataToFrappe();
+// sendDataToFrappe();

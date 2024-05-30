@@ -1,9 +1,9 @@
 export const FIELD_TYPES = {
-    COLUMN_BREAK: 'Column Break',
-    SECTION_BREAK: 'Section Break',
-    TEXT: 'Text',
-    FILE_UPLOAD: 'FileUpload',
-    DEFAULT_FALLBACK_COMPONENT: 'Text',
+    COLUMN_BREAK: 'column break',
+    SECTION_BREAK: 'section break',
+    TEXT: 'text',
+    FILE_UPLOAD: 'fileupload',
+    DEFAULT_FALLBACK_COMPONENT: 'text',
 };
 
 export const MESSAGES = {

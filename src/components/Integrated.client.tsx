@@ -1,27 +1,43 @@
 'use client';
 import React, { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { createFieldConfig, hasFileUploadField, countColumnBreaks } from './FormHelpers';
+import { createFieldConfig, hasFileUploadField, countColumnBreaks, buildYupValidationSchema } from './FormHelpers';
 import { RenderField } from './RenderField';
 import { CustomComponents } from './Types';
 import { FORM_ENCTYPE } from './constants';
+import {yupResolver} from '@hookform/resolvers/yup';
 
-// todo: component map should be passed here, and the RenderField should be hidden from the end user. 
 interface FormComponentProps {
     componentMap: CustomComponents;
     frappeObject: any
 }
 
 const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObject }) => {
-    const { control, handleSubmit, formState: { errors } } = useForm();
     const fieldConfigurations = useMemo(() => createFieldConfig(frappeObject), []);
-
+    const validationSchema = useMemo(() => buildYupValidationSchema(fieldConfigurations), [fieldConfigurations]);
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        resolver: yupResolver(validationSchema)
+    });
     const containsFileUpload = useMemo(() => {
         return fieldConfigurations.some(section => section.fields && hasFileUploadField(section.fields));
     }, [fieldConfigurations]);
 
-    const onSubmit = (data: any) => {
-        console.log(data);
+    const onSubmit = async (data: { [key:string]: any} ) => {
+        console.log("Submitting:", data);
+        try {
+            // replace with process.env link
+            const response = await fetch(`http://localhost:4000/api/submit-frappe-form/kurwa`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const responseData = await response.json();
+            console.log("Response:", responseData);
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        }
     };
 
     return (

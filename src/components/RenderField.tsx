@@ -2,7 +2,7 @@ import React from 'react';
 import { Controller, ControllerRenderProps } from 'react-hook-form';
 import { ExtendedField, CustomComponents } from './Types';
 import { FIELD_TYPES } from './constants';
-import { generateValidationRules } from './validationRules';
+import { getComponent } from './FormHelpers';
 
 interface RenderFieldProps {
     field: ExtendedField;
@@ -14,18 +14,16 @@ interface RenderFieldProps {
 
 export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors, index, componentMap }) => {
     // Skip rendering for non-interactive field types such as 'Column Break' and 'Section Break'
-    if (field.fieldtype === FIELD_TYPES.COLUMN_BREAK || field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
+    if (field.fieldtype.toLowerCase() === FIELD_TYPES.COLUMN_BREAK || field.fieldtype.toLowerCase() === FIELD_TYPES.SECTION_BREAK) {
         return null;
     }
-    
-    const Component = componentMap[field.fieldtype] || componentMap.Text; // @todo: for debug purposes only. Will remove before release.
-    // console.log({component: field.fieldtype})
+    const Component = getComponent(field.fieldtype);
+
     return (
         <Controller
             key={index}
             name={field.fieldname}
             control={control}
-            rules={generateValidationRules(field)}
             defaultValue={field.default || ''}
             render={({ field: controllerField }: { field: ControllerRenderProps }) => (
                 <div>

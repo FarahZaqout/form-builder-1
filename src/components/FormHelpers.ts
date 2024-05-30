@@ -8,6 +8,7 @@ export function getComponent(fieldType: string): React.ComponentType<{ field: an
     return DefaultComponents[fieldName] || DefaultComponents[FIELD_TYPES.DEFAULT_FALLBACK_COMPONENT];
 }
 
+// todo: rework this into 2 functions. 1- clean up the object and reduce its size. 2- adjust the field structure for the layout modification
 export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
     const configurations: ExtendedField[] = [];
     let currentSection: ExtendedField | null = null;
@@ -48,7 +49,6 @@ export function hasFileUploadField(fields: ExtendedField[]): boolean {
 }
 
 // Utility function to build Yup validation schema based on the field configuration
-
 export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
     let schemaFields: {[key: string]: yup.NumberSchema | yup.StringSchema | yup.DateSchema | yup.MixedSchema} = {};
     let validator: yup.NumberSchema | yup.StringSchema | yup.DateSchema | yup.MixedSchema;

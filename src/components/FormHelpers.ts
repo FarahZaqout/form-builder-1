@@ -41,7 +41,7 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
         options: "",
         fields: []  // This will hold the actual fields
     };
-    
+
     formFields.docs.forEach(doc => {
         doc.fields.forEach((field: any) => {
             const extendedField: ExtendedField = {
@@ -92,13 +92,6 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
     }
 
     return configurations;
-}
-
-
-
-export function countColumnBreaks(fields: ExtendedField[]): number {
-    // This function assumes fields array does not include the 'Section Break' itself
-    return fields.reduce((count, field) => count + (field.fieldtype === FIELD_TYPES.COLUMN_BREAK ? 1 : 0), 0);
 }
 
 export function hasFileUploadField(fields: ExtendedField[]): boolean {
@@ -172,4 +165,15 @@ export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
     });
 
     return yup.object().shape(schemaFields);
+}
+
+export function hasMultipleSubsections(section: ExtendedField): boolean {
+    if (!section.fields || section.fields.length === 0) {
+        return false; // No fields or subsections present
+    }
+
+    // Count the subsections by filtering fields where fieldtype matches COLUMN_BREAK
+    const subsectionCount = section.fields.filter(field => field.fieldtype.toLowerCase() === FIELD_TYPES.COLUMN_BREAK).length;
+
+    return subsectionCount > 1;
 }

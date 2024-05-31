@@ -12,11 +12,11 @@ export function getComponent(fieldType: string): React.ComponentType<{ field: an
 export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
     const configurations: ExtendedField[] = [];
     let currentSection: ExtendedField | null = null;
+    let currentSubsection: ExtendedField | null = null;
 
     formFields.docs.forEach(doc => {
         doc.fields.forEach((field: any) => {
-            const extendedField: ExtendedField = { 
-                // ...field,
+            const extendedField: ExtendedField = {
                 disabled: Boolean(field.read_only),
                 required: Boolean(field.reqd),
                 placeholder: field.label || field.fieldname,
@@ -25,33 +25,53 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
                 label: field.label,
                 length: field.length,
                 non_negative: field.non_negative,
-                fields: field.fields,
                 default: field.default,
                 hidden: field.hidden,
                 options: field.options,
+                fields: []  // Initialize fields array for subsections
             };
 
-            if (field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
+            if (field.fieldtype.toLowerCase() === FIELD_TYPES.SECTION_BREAK) {
                 if (currentSection) {
+                    if (currentSubsection) {
+                        currentSection.fields!.push(currentSubsection);
+                    }
                     configurations.push(currentSection);
                 }
-                // Reset currentSection with a new section and initialize fields array
                 currentSection = { ...extendedField, fields: [] };
-            } else if (currentSection) {
-                currentSection.fields!.push(extendedField);  // Use non-null assertion as fields is initialized
+                // Start a new subsection immediately upon starting a new section
+                currentSubsection = { ...extendedField, fields: [] };
+            } else if (field.fieldtype.toLowerCase() === FIELD_TYPES.COLUMN_BREAK) {
+                if (currentSection) {
+                    if (currentSubsection) {
+                        currentSection.fields!.push(currentSubsection);
+                    }
+                    // Start a new subsection upon column break
+                    currentSubsection = { ...extendedField, fields: [] };
+                }
             } else {
-                // Directly push fields that are not part of any section
-                configurations.push(extendedField);
+                if (currentSubsection) {
+                    currentSubsection.fields!.push(extendedField);
+                } else {
+                    // This case should not typically occur, but it handles fields outside of subsections
+                    console.warn("Field is outside any subsection:", extendedField);
+                }
             }
         });
     });
 
+    // Push the last section and subsection if they exist
     if (currentSection) {
+        if (currentSubsection) {
+            // @ts-ignore
+            currentSection.fields!.push(currentSubsection);
+        }
         configurations.push(currentSection);
     }
 
     return configurations;
 };
+
 
 export function countColumnBreaks(fields: ExtendedField[]): number {
     // This function assumes fields array does not include the 'Section Break' itself

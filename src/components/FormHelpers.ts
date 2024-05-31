@@ -8,7 +8,59 @@ export function getComponent(fieldType: string): React.ComponentType<{ field: an
     return DefaultComponents[fieldName] || DefaultComponents[FIELD_TYPES.DEFAULT_FALLBACK_COMPONENT];
 }
 
-// todo: rework this into 2 functions. 1- clean up the object and reduce its size. 2- adjust the field structure for the layout modification
+function processFields(fields: any[], currentSection: ExtendedField | null, currentSubsection: ExtendedField | null, configurations: ExtendedField[]): void {
+    fields.forEach(field => {
+        const extendedField: ExtendedField = {
+            disabled: Boolean(field.read_only),
+            required: Boolean(field.reqd),
+            placeholder: field.label || field.fieldname,
+            fieldtype: field.fieldtype,
+            fieldname: field.fieldname,
+            label: field.label,
+            length: field.length,
+            non_negative: field.non_negative,
+            default: field.default,
+            hidden: field.hidden,
+            options: field.options,
+            fields: []  // Initialize fields array for subsections
+        };
+
+        switch (field.fieldtype.toLowerCase()) {
+            case FIELD_TYPES.SECTION_BREAK:
+                if (currentSection) {
+                    if (currentSubsection) {
+                        currentSection.fields!.push(currentSubsection);
+                    }
+                    configurations.push(currentSection);
+                }
+                currentSection = { ...extendedField, fields: [] };
+                currentSubsection = { ...extendedField, fields: [] };
+                break;
+            case FIELD_TYPES.COLUMN_BREAK:
+                if (currentSection && currentSubsection) {
+                    currentSection.fields!.push(currentSubsection);
+                    currentSubsection = { ...extendedField, fields: [] };
+                }
+                break;
+            default:
+                if (currentSubsection) {
+                    currentSubsection.fields!.push(extendedField);
+                }
+                break;
+        }
+    });
+
+    // Handle the last section and subsection
+    if (currentSection) {
+        // @ts-ignore
+        if (currentSubsection && currentSubsection.fields.length > 0) {
+            currentSection.fields!.push(currentSubsection);
+        }
+        configurations.push(currentSection);
+    }
+}
+
+
 export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
     const configurations: ExtendedField[] = [];
     let currentSection: ExtendedField | null = null;
@@ -35,12 +87,12 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
                 if (currentSection) {
                     if (currentSubsection) {
                         currentSection.fields!.push(currentSubsection);
+                        currentSubsection = null;  // Ensure the subsection is reset after pushing
                     }
                     configurations.push(currentSection);
                 }
+                // Start a new section and a new subsection
                 currentSection = { ...extendedField, fields: [] };
-                // Start a new subsection immediately upon starting a new section
-                currentSubsection = { ...extendedField, fields: [] };
             } else if (field.fieldtype.toLowerCase() === FIELD_TYPES.COLUMN_BREAK) {
                 if (currentSection) {
                     if (currentSubsection) {
@@ -48,12 +100,21 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
                     }
                     // Start a new subsection upon column break
                     currentSubsection = { ...extendedField, fields: [] };
+                } else {
+                    // Create a new section if none exists and start the subsection
+                    currentSection = { fieldtype: FIELD_TYPES.SECTION_BREAK, fields: [] };
+                    currentSubsection = { ...extendedField, fields: [] };
+                    currentSection.fields!.push(currentSubsection);
                 }
             } else {
                 if (currentSubsection) {
                     currentSubsection.fields!.push(extendedField);
+                } else if (currentSection) {
+                    // If no subsection has started, add the field directly to the section
+                    currentSection.fields!.push(extendedField);
                 } else {
-                    console.log("kurwa");
+                    // Start a new section if there is no current section
+                    currentSection = { fieldtype: FIELD_TYPES.SECTION_BREAK, fields: [extendedField] };
                 }
             }
         });
@@ -62,14 +123,14 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
     // Push the last section and subsection if they exist
     if (currentSection) {
         if (currentSubsection) {
-            // @ts-ignore
             currentSection.fields!.push(currentSubsection);
         }
         configurations.push(currentSection);
     }
 
     return configurations;
-};
+}
+
 
 
 export function countColumnBreaks(fields: ExtendedField[]): number {

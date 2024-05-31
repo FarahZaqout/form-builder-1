@@ -26,12 +26,12 @@ export const RenderField: React.FC<RenderFieldProps> = ({ field, control, errors
             control={control}
             defaultValue={field.default || ''}
             render={({ field: controllerField }: { field: ControllerRenderProps }) => (
-                <>
+                <div className='w-full'>
                     {!Boolean(field.hidden) && <>
                         <Component field={controllerField} config={field} />
                         {errors[field.fieldname] && <span className="w-full text-red-500">{errors[field.fieldname].message}</span>}
                     </>}
-                </>
+                </div>
             )}
         />
     );

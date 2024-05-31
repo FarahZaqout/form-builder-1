@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, ControllerRenderProps } from 'react-hook-form';
 import { ExtendedField, CustomComponents } from '../Types';
-import { FIELD_TYPES } from './constants';
+import { FIELD_TYPES } from '../constants';
 import { getComponent } from './FormHelpers';
 
 interface RenderFieldProps {

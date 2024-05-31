@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { createFieldConfig, hasFileUploadField, countColumnBreaks, buildYupValidationSchema } from './FormHelpers';
 import { RenderField } from './RenderField';
 import { CustomComponents, ExtendedField } from '../Types';
-import { FORM_ENCTYPE } from './constants';
+import { FORM_ENCTYPE } from '../constants';
 import {yupResolver} from '@hookform/resolvers/yup';
 
 interface FormComponentProps {
@@ -40,6 +40,8 @@ const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObjec
         return fieldConfigurations.some(section => section.fields && hasFileUploadField(section.fields));
     }, [fieldConfigurations]);
 
+    console.log({fieldConfigurations});
+
     const onSubmit = async (data: { [key:string]: any} ) => {
         try {
             // replace with process.env link
@@ -60,7 +62,7 @@ const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObjec
             {fieldConfigurations.map((section, index) => {
                 return (
                     <div key={index}>
-                        {Boolean(section.fields && section.fields.length) ? renderFields(section.fields, control, errors, componentMap) : (
+                        {Boolean(section.fields && section.fields.length) ? renderFields(section.fields!, control, errors, componentMap) : (
                             // Render the field directly if there are no nested fields
                             <RenderField key={index} field={section} control={control} errors={errors} index={index} componentMap={componentMap} />
                         )}
@@ -70,6 +72,6 @@ const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObjec
         <button type="submit" className="btn btn-primary">Submit</button>
         </form>
     );
-};
+};  
 
 export default FormComponent;

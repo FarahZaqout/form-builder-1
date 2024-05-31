@@ -1,6 +1,6 @@
 import { FrappeObject, ExtendedField, Field } from '../Types';
 import { DefaultComponents } from './ComponentMap';
-import { FIELD_TYPES } from './constants';
+import { FIELD_TYPES } from '../constants';
 import * as yup from 'yup';
 
 export function getComponent(fieldType: string): React.ComponentType<{ field: any, config: ExtendedField }> {
@@ -52,6 +52,8 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
             } else {
                 if (currentSubsection) {
                     currentSubsection.fields!.push(extendedField);
+                } else {
+                    console.log("kurwa");
                 }
             }
         });

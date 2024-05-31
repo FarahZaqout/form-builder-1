@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { createFieldConfig, hasFileUploadField, countColumnBreaks, buildYupValidationSchema } from './FormHelpers';
 import { RenderField } from './RenderField';
-import { CustomComponents } from './Types';
+import { CustomComponents } from '../Types';
 import { FORM_ENCTYPE } from './constants';
 import {yupResolver} from '@hookform/resolvers/yup';
 

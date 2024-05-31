@@ -3,7 +3,7 @@ import { DefaultComponents } from './ComponentMap';
 import { FIELD_TYPES } from './constants';
 import * as yup from 'yup';
 
-export function getComponent(fieldType: string): React.ComponentType<{ field: any, config: Field }> {
+export function getComponent(fieldType: string): React.ComponentType<{ field: any, config: ExtendedField }> {
     const fieldName = fieldType.toLowerCase();
     return DefaultComponents[fieldName] || DefaultComponents[FIELD_TYPES.DEFAULT_FALLBACK_COMPONENT];
 }
@@ -15,7 +15,21 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
 
     formFields.docs.forEach(doc => {
         doc.fields.forEach((field: any) => {
-            const extendedField: ExtendedField = { ...field, disabled: Boolean(field.read_only), required: Boolean(field.reqd) };
+            const extendedField: ExtendedField = { 
+                // ...field,
+                disabled: Boolean(field.read_only),
+                required: Boolean(field.reqd),
+                placeholder: field.label || field.fieldname,
+                fieldtype: field.fieldtype,
+                fieldname: field.fieldname,
+                label: field.label,
+                length: field.length,
+                non_negative: field.non_negative,
+                fields: field.fields,
+                default: field.default,
+                hidden: field.hidden,
+                options: field.options,
+            };
 
             if (field.fieldtype === FIELD_TYPES.SECTION_BREAK) {
                 if (currentSection) {
@@ -104,9 +118,10 @@ export function buildYupValidationSchema(fieldConfigurations: ExtendedField[]) {
                         break;
                 }
 
-                if (field.reqd) {
-                    validator = validator.required('This field is required');
-                }
+                if (field.required) validator = validator.required('This field is required');
+                if (field.non_negative) validator = validator.min(0);
+                if (field.length) validator = validator.min(field.length);
+
 
                 schemaFields[field.fieldname] = validator;
             });

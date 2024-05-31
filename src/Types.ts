@@ -65,10 +65,21 @@ export interface FrappeObject {
 }
 
 export interface CustomComponents {
-    [key: string]: React.ComponentType<{ field: any, config: Field }>;
+    [key: string]: React.ComponentType<{ field: any, config: ExtendedField }>;
 }
 
 // todo: optimize 
-export interface ExtendedField extends Field {
+export interface ExtendedField  {
     fields?: ExtendedField[];
+    disabled: number | boolean;
+    required: number | boolean;
+    placeholder: string;
+    fieldtype: string;
+    fieldname: string;
+    label: string;
+    length: number;
+    non_negative?: number | boolean;
+    default: string;
+    hidden: number | boolean;
+    options: string,
 }

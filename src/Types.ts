@@ -70,7 +70,7 @@ export interface CustomComponents {
 
 // todo: optimize 
 export interface ExtendedField  {
-    fields?: ExtendedField[];
+    fields: ExtendedField[];
     disabled: number | boolean;
     required: number | boolean;
     placeholder: string;

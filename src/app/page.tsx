@@ -1,9 +1,9 @@
 'use client'
 import IntegratedForm from '../components/Form';
 import { DefaultComponents } from '../components/ComponentMap';
-import {frappe2} from '../components/todo';
-import {testDoc} from '../components/testDoc';
-import {kurwa} from '../components/kurwa';
+import {frappe2} from '../mockObjects/todo';
+import {testDoc} from '../mockObjects/testDoc';
+import {kurwa} from '../mockObjects/kurwa';
 
 export default function Home() {
   return (

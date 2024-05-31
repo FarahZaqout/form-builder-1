@@ -52,9 +52,6 @@ export function createFieldConfig(formFields: FrappeObject): ExtendedField[] {
             } else {
                 if (currentSubsection) {
                     currentSubsection.fields!.push(extendedField);
-                } else {
-                    // This case should not typically occur, but it handles fields outside of subsections
-                    console.warn("Field is outside any subsection:", extendedField);
                 }
             }
         });

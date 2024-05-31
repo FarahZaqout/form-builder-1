@@ -1,5 +1,5 @@
 'use client'
-import IntegratedForm from '../components/Integrated.client';
+import IntegratedForm from '../components/Form';
 import { DefaultComponents } from '../components/ComponentMap';
 import {frappe2} from '../components/todo';
 import {testDoc} from '../components/testDoc';

@@ -40,21 +40,16 @@ const FormComponent: React.FC<FormComponentProps> = ({ componentMap, frappeObjec
         return fieldConfigurations.some(section => section.fields && hasFileUploadField(section.fields));
     }, [fieldConfigurations]);
 
-    console.log(JSON.stringify(fieldConfigurations));
-
     const onSubmit = async (data: { [key:string]: any} ) => {
-        console.log("Submitting:", data);
         try {
             // replace with process.env link
-            const response = await fetch(`http://localhost:4000/api/submit-frappe-form/kurwa`, {
+            await fetch(`http://localhost:4000/api/submit-frappe-form/kurwa`, {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-            const responseData = await response.json();
-            console.log("Response:", responseData);
         } catch (error) {
             console.error("Error submitting form:", error);
         }
